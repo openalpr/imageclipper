@@ -4,7 +4,7 @@ project(imageclipper)
 SET(PROJECT_VERSION "0.1")
 
 
-SET(OpenCV_DIR "~/projects/anpr/opencv-2.4.5/")
+SET(OpenCV_DIR "../../libraries/opencv/")
 
 
 # Opencv Package
