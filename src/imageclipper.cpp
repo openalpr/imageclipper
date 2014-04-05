@@ -49,6 +49,11 @@
 #include "opencvx/cvpointnorm.h"
 using namespace std;
 
+// US plates use 12x6, EU plates use 16x4
+const float ASPECT_WIDTH = 12;
+const float ASPECT_HEIGHT = 6;
+const float ASPECT = ASPECT_WIDTH / ASPECT_HEIGHT;
+
 /************************************ Structure ******************************/
 
 /**
@@ -660,7 +665,9 @@ void mouse_callback( int event, int x, int y, int flags, void* _param )
         param->rect.x = min( point0.x, x );
         param->rect.y = min( point0.y, y );
         param->rect.width =  abs( point0.x - x );
-        param->rect.height = abs( point0.y - y );
+
+	// Adjust to correct ratio for my boxes
+	param->rect.height = abs( point0.x - x ) / ASPECT; 
 
         cvShowImageAndRectangle( param->w_name, param->img, 
                                  cvRect32fFromRect( param->rect, param->rotate ), 
