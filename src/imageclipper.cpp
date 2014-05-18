@@ -50,9 +50,9 @@
 using namespace std;
 
 // US plates use 12x6, EU plates use 16x4
-const float ASPECT_WIDTH = 12;
-const float ASPECT_HEIGHT = 6;
-const float ASPECT = ASPECT_WIDTH / ASPECT_HEIGHT;
+const float DEFAULT_ASPECT_WIDTH = 12;
+const float DEFAULT_ASPECT_HEIGHT = 6;
+const float DEFAULT_ASPECT = DEFAULT_ASPECT_WIDTH / DEFAULT_ASPECT_HEIGHT;
 
 /************************************ Structure ******************************/
 
@@ -78,6 +78,7 @@ typedef struct CvCallbackParam {
     vector<string> filelist;            /**< directory reading */
     vector<string>::iterator fileiter;  /**< iterator */
     CvCapture* cap;                     /**< video reading */
+    float aspect_ratio;
     int frame;                          /**< iterator */
 } CvCallbackParam ;
 
@@ -90,6 +91,7 @@ typedef struct ArgParam {
     const char* imgout_format;
     const char* vidout_format;
     const char* output_format;
+    float aspect_ratio;
     int   frame;
 } ArgParam;
 
@@ -145,6 +147,7 @@ int main( int argc, char *argv[] )
         "%d/imageclipper/%i.%e_%04r_%04x_%04y_%04w_%04h.png",
         "%d/imageclipper/%i.%e_%04f_%04r_%04x_%04y_%04w_%04h.png",
         NULL,
+	DEFAULT_ASPECT,
         1
     };
     ArgParam *arg = &init_arg;
@@ -174,6 +177,7 @@ void load_reference( const ArgParam* arg, CvCallbackParam* param )
     param->output_format = ( arg->output_format != NULL ? arg->output_format : 
         ( is_video ? arg->vidout_format : arg->imgout_format ) );
     param->frame = arg->frame;
+    param->aspect_ratio = arg->aspect_ratio;
 
     if( is_dir || is_image )
     {
@@ -667,7 +671,7 @@ void mouse_callback( int event, int x, int y, int flags, void* _param )
         param->rect.width =  abs( point0.x - x );
 
 	// Adjust to correct ratio for my boxes
-	param->rect.height = abs( point0.x - x ) / ASPECT; 
+	param->rect.height = abs( point0.x - x ) / param->aspect_ratio; 
 
         cvShowImageAndRectangle( param->w_name, param->img, 
                                  cvRect32fFromRect( param->rect, param->rotate ), 
@@ -835,6 +839,10 @@ void arg_parse( int argc, char** argv, ArgParam *arg )
         {
             arg->output_format = argv[++i];
         }
+        else if( !strcmp( argv[i], "-r" ) || !strcmp( argv[i], "--aspect_ratio" ) )
+	{
+	    arg->aspect_ratio = atof( argv[++i] );
+	}
         else if( !strcmp( argv[i], "-i" ) || !strcmp( argv[i], "--imgout_format" ) )
         {
             arg->imgout_format = argv[++i];
@@ -894,6 +902,9 @@ void usage( const ArgParam* arg )
     cout << "    -f" << endl;
     cout << "    --frame <frame = 1> (video)" << endl;
     cout << "        Determine the frame number of video to start to read." << endl;
+    cout << "    -r" << endl;
+    cout << "    --aspect_ratio <aspect_ratio = 2>" << endl;
+    cout << "        Lock the aspect ratio to a particular value.  For example, USA style plate should use a value of 2." << endl;
     cout << "    -h" << endl;
     cout << "    --help" << endl;
     cout << "        Show this help" << endl;
