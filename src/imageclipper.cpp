@@ -546,17 +546,6 @@ void key_callback( const ArgParam* arg, CvCallbackParam* param )
             {
                 param->shear.x += param->inc;
             }
-            // Rotation
-            else if( key == 'r' ) // Counter-Clockwise
-            {
-                param->rotate += param->inc;
-                param->rotate = (param->rotate >= 360) ? param->rotate - 360 : param->rotate;
-            }
-            else if( key == 'R' ) // Clockwise
-            {
-                param->rotate -= param->inc;
-                param->rotate = (param->rotate < 0) ? 360 + param->rotate : param->rotate;
-            }
             else if( key == 'e' ) // Expand
             {
                 param->rect.x = max( 0, param->rect.x - param->inc );
@@ -931,7 +920,6 @@ void gui_usage()
     cout << "    b (backward)            : Backward. " << endl;
     cout << "    d (delete)              : Delete the current file. " << endl;
     cout << "    q (quit) or ESC         : Quit. " << endl;
-    cout << "    r (rotate) R (opposite) : Rotate rectangle in counter-clockwise." << endl;
     cout << "    e (expand) E (shrink)   : Expand the recntagle size." << endl;
     cout << "    + (incl)   - (decl)     : Increment the step size to increment." << endl;
     cout << "    h (left) j (down) k (up) l (right) : Move rectangle. (vi-like keybinds)" << endl;
