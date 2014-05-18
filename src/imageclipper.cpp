@@ -39,6 +39,8 @@
 #include <math.h>
 #include <iostream>
 #include <string>
+#include <sstream> 
+#include <fstream> 
 #include <vector>
 #include "filesystem.h"
 #include "icformat.h"
@@ -48,6 +50,10 @@
 #include "opencvx/cvcropimageroi.h"
 #include "opencvx/cvpointnorm.h"
 using namespace std;
+
+const std::string DEFAULT_OUTPUT_DIR = "imageclipper";
+const std::string DEFAULT_OUTPUT_IMG_FORMAT = "%d/" + DEFAULT_OUTPUT_DIR + "/%i.%e_%04r_%04x_%04y_%04w_%04h.png";
+const std::string DEFAULT_OUTPUT_VIDEO_FORMAT = "%d/" + DEFAULT_OUTPUT_DIR + "/%i.%e_%04f_%04r_%04x_%04y_%04w_%04h.png";
 
 // US plates use 12x6, EU plates use 16x4
 const float DEFAULT_ASPECT_WIDTH = 12;
@@ -144,8 +150,8 @@ int main( int argc, char *argv[] )
     ArgParam init_arg = {
         argv[0],
         ".",
-        "%d/imageclipper/%i.%e_%04r_%04x_%04y_%04w_%04h.png",
-        "%d/imageclipper/%i.%e_%04f_%04r_%04x_%04y_%04w_%04h.png",
+        DEFAULT_OUTPUT_IMG_FORMAT.c_str(),
+        DEFAULT_OUTPUT_VIDEO_FORMAT.c_str(),
         NULL,
 	DEFAULT_ASPECT,
         1
@@ -275,6 +281,7 @@ void key_callback( const ArgParam* arg, CvCallbackParam* param )
                     param->rect.x, param->rect.y, param->rect.width, param->rect.height, 
                     param->frame, param->rotate );
 
+
                 if( !filesystem::match_extensions( output_path, param->imtypes ) )
                 {
                     cerr << "The image type " << filesystem::extension( output_path ) << " is not supported." << endl;
@@ -291,6 +298,25 @@ void key_callback( const ArgParam* arg, CvCallbackParam* param )
                 cvSaveImage( filesystem::realpath( output_path ).c_str(), crop );
                 cout << filesystem::realpath( output_path ) << endl;
                 cvReleaseImage( &crop );
+		
+
+		string output_meta_file = filesystem::dirname( filename ) + "/" + DEFAULT_OUTPUT_DIR + "/" + filesystem::filename( filename ) + ".txt";
+		std::stringstream meta_file_content;
+		meta_file_content << filesystem::filename( filename ) << "." << filesystem::extension( filename ) << "\t";
+		
+ 
+		if (param->cap)
+		{
+		  // This is a video file -- add the frame number
+		  meta_file_content << param->frame << "\t";
+		}
+				  
+		meta_file_content << param->rect.x << "\t" << param->rect.y << "\t" << param->rect.width << "\t" << param->rect.height << std::endl;
+		
+		ofstream metaFile;
+		metaFile.open(output_meta_file.c_str(), std::ofstream::out | std::ofstream::app);
+		metaFile << meta_file_content.str();
+		metaFile.close();
             }
         }
 	if (key == 'd')
